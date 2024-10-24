@@ -100,13 +100,12 @@ int main()
         celula *aux = (celula *)malloc(sizeof(celula));
         int pos;
 
-        QuickSort(lista, lista->inicio, lista->fim - 1, 0, 0); // ordena a lista antes de realizar a busca
-
         scanf(" %s", comando2);        // Comando seguinte -p ou -t
         if (!(strcmp(comando2, "-p"))) // quando for igual a -p
         {
           scanf("%d", &processo->prior);
           scanf("%d", &aux->prior);
+          QuickSort(lista, lista->inicio, lista->fim - 1, 0, 0); // ordena a lista (ordem de prioridade e crescente )antes de realizar a busca
           pos = busca_binaria(lista, processo, 1);
           lista->lista_de_processos[pos]->prior = aux->prior;
           printf("\n------%d------\n", lista->lista_de_processos[pos]->prior);
@@ -115,8 +114,11 @@ int main()
         {
           scanf("%d %d %d", &processo->chegada.hh, &processo->chegada.mm, &processo->chegada.ss);
           scanf("%d %d %d", &aux->chegada.hh, &aux->chegada.mm, &aux->chegada.ss);
-
+          QuickSort(lista, lista->inicio, lista->fim - 1, 0, 1); // ordena a lista (ordem de horario e crescente )antes de realizar a busca
           pos = busca_binaria(lista, processo, 0);
+          lista->lista_de_processos[pos]->chegada.hh = aux->chegada.hh;
+          lista->lista_de_processos[pos]->chegada.mm = aux->chegada.mm;
+          lista->lista_de_processos[pos]->chegada.ss = aux->chegada.ss;
         }
 
         free(aux);
