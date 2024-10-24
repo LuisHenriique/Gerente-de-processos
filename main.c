@@ -91,7 +91,7 @@ int main()
         QuickSort(lista, lista->inicio, lista->fim - 1, 1, 1);
         printf("%d %02d:%02d:%02d %s ", lista->lista_de_processos[lista->fim - 1]->prior, lista->lista_de_processos[lista->fim - 1]->chegada.hh, lista->lista_de_processos[lista->fim - 1]->chegada.mm, lista->lista_de_processos[lista->fim - 1]->chegada.ss, lista->lista_de_processos[lista->fim - 1]->descricao);
       }
-      printf("\n\n");
+      printf("\n");
     }
     if (!(strcmp(comando, "change")))
     {
@@ -108,7 +108,6 @@ int main()
           QuickSort(lista, lista->inicio, lista->fim - 1, 0, 0); // ordena a lista (ordem de prioridade e crescente )antes de realizar a busca
           pos = busca_binaria(lista, processo, 1);
           lista->lista_de_processos[pos]->prior = aux->prior;
-          printf("\n------%d------\n", lista->lista_de_processos[pos]->prior);
         }
         else
         {
@@ -116,6 +115,7 @@ int main()
           scanf("%d %d %d", &aux->chegada.hh, &aux->chegada.mm, &aux->chegada.ss);
           QuickSort(lista, lista->inicio, lista->fim - 1, 0, 1); // ordena a lista (ordem de horario e crescente )antes de realizar a busca
           pos = busca_binaria(lista, processo, 0);
+
           lista->lista_de_processos[pos]->chegada.hh = aux->chegada.hh;
           lista->lista_de_processos[pos]->chegada.mm = aux->chegada.mm;
           lista->lista_de_processos[pos]->chegada.ss = aux->chegada.ss;
@@ -138,7 +138,7 @@ int main()
         QuickSort(lista, lista->inicio, lista->fim - 1, 0, 1);
         lista_imprimir(lista);
       }
-      printf("\n\n");
+      printf("\n");
     }
 
     scanf(" %s", comando);
@@ -319,6 +319,7 @@ int particiona_horario(LISTA *lista, int inicio, int fim, int cres_decres)
 
 int busca_binaria(LISTA *lista, celula *processo, int tipo)
 {
+
   if (lista != NULL)
   {
     int inf = lista->inicio;
