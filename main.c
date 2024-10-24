@@ -29,16 +29,21 @@ typedef struct lista
   int fim;
 } LISTA;
 
-/*protóripos de funções*/
+/*Protótipos de funções*/
 LISTA *lista_criar();
 void lista_inserir_processo(celula *, LISTA *);
 void lista_imprimir(LISTA *);
+void lista_destruir(LISTA *);
 void lista_executar_processo(LISTA *);
+
 void QuickSort(LISTA *, int, int, int, int);
 int particiona_prior(LISTA *, int, int, int);
 int particiona_horario(LISTA *lista, int inicio, int fim, int cres_decres);
 int horario_para_segundo(horario);
 
+int busca_binaria(LISTA *, celula *);
+
+// Main
 int main()
 {
   LISTA *lista = lista_criar();
@@ -62,12 +67,12 @@ int main()
     {
       scanf(" %s", comando2);
 
-      if (!(strcmp(comando2, "-p"))) // quando for igual a -p ---> executa com maior prioridade
+      if (!(strcmp(comando2, "-p"))) // quando for igual a -p ---> executa o de maior prioridade
       {
         QuickSort(lista, lista->inicio, lista->fim - 1, 0, 0);
         lista_executar_processo(lista);
       }
-      else // -t ---> executa com o menor tempo
+      else // -t ---> executa o  de menor tempo
       {
         QuickSort(lista, lista->inicio, lista->fim - 1, 1, 1);
         lista_executar_processo(lista);
@@ -90,12 +95,15 @@ int main()
     }
     if (!(strcmp(comando, "chance")))
     {
+
       scanf(" %s", comando2);
       if (!(strcmp(comando2, "-p"))) // quando for igual a -p
       {
+        scanf("%d", &processo->prior);
       }
       else
       {
+        scanf("%d %d %d", &processo->chegada.hh, &processo->chegada.mm, &processo->chegada.ss);
       }
     }
     if (!(strcmp(comando, "print")))
@@ -116,14 +124,9 @@ int main()
 
     scanf(" %s", comando);
   };
-  /*printf("\nNÃO ORDENADO\n");
-  lista_imprimir(lista);
-  printf("\nGerenciador de processos finalizado\n");
 
-  printf("\nORDENADO\n");
-  QuickSort(lista, lista->inicio, lista->fim - 1, 1, 1);
-  lista_imprimir(lista);
-  printf("\nGerenciador de processos finalizado\n");*/
+  lista_destruir(lista);
+
   return 0;
 }
 /*Funções da estrutura de dado*/
@@ -186,7 +189,19 @@ void lista_executar_processo(LISTA *lista) // remove sempre o último elemento d
     lista->fim--;
   }
 }
+void lista_destruir(LISTA *lista)
+{
+  if (lista != NULL)
+  {
+    for (int i = 0; i < lista->tam; i++)
+    {
+      free(lista->lista_de_processos[i]);
+      lista->lista_de_processos[i] = NULL;
+    }
 
+    free(lista);
+  }
+}
 /*Funções de ordenação -> prioridade  */
 
 int particiona_prior(LISTA *lista, int inicio, int fim, int cres_decres)
@@ -279,4 +294,24 @@ int particiona_horario(LISTA *lista, int inicio, int fim, int cres_decres)
   }
 
   return inicio;
+}
+
+/*Metodo de busca*/
+
+int busca_binaria(LISTA *lista, celula *processo)
+{
+  if (lista != NULL)
+  {
+    int inf = lista->inicio;
+    int sup = lista->fim;
+    int meio;
+
+    while (inf <= sup)
+    {
+      meio = (inf + sup) / 2;
+      // if ()
+      // if ()
+      //  else
+    }
+  }
 }
