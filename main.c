@@ -41,7 +41,7 @@ int particiona_prior(LISTA *, int, int, int);
 int particiona_horario(LISTA *lista, int inicio, int fim, int cres_decres);
 int horario_para_segundo(horario);
 
-int busca_binaria(LISTA *, celula *);
+int busca_binaria(LISTA *, celula *, int);
 
 // Main
 int main()
@@ -93,7 +93,7 @@ int main()
       }
       printf("\n\n");
     }
-    if (!(strcmp(comando, "chance")))
+    if (!(strcmp(comando, "change")))
     {
 
       scanf(" %s", comando2);
@@ -298,20 +298,50 @@ int particiona_horario(LISTA *lista, int inicio, int fim, int cres_decres)
 
 /*Metodo de busca*/
 
-int busca_binaria(LISTA *lista, celula *processo)
+int busca_binaria(LISTA *lista, celula *processo, int tipo)
 {
   if (lista != NULL)
   {
     int inf = lista->inicio;
-    int sup = lista->fim;
+    int sup = lista->fim - 1;
     int meio;
 
     while (inf <= sup)
     {
       meio = (inf + sup) / 2;
-      // if ()
-      // if ()
-      //  else
+      if (tipo == 1) // ---> faz busca de acordo com a prioridade
+      {
+        if (lista->lista_de_processos[meio]->prior == processo->prior)
+        {
+          return meio;
+        }
+        if (lista->lista_de_processos[meio]->prior > processo->prior)
+        {
+          sup = meio - 1;
+        }
+        else
+        {
+          inf = meio + 1;
+        }
+      }
+      else // faz busca do horário
+      {
+        if ((lista->lista_de_processos[meio]->chegada.hh == processo->chegada.hh) && (lista->lista_de_processos[meio]->chegada.mm == processo->chegada.mm) && (lista->lista_de_processos[meio]->chegada.ss == processo->chegada.ss))
+        {
+          return meio;
+        }
+        if ((lista->lista_de_processos[meio]->chegada.hh > processo->chegada.hh) ||
+            (lista->lista_de_processos[meio]->chegada.hh == processo->chegada.hh && lista->lista_de_processos[meio]->chegada.mm > processo->chegada.mm) ||
+            (lista->lista_de_processos[meio]->chegada.hh == processo->chegada.hh && lista->lista_de_processos[meio]->chegada.mm == processo->chegada.mm && lista->lista_de_processos[meio]->chegada.ss > processo->chegada.ss))
+        {
+          sup = meio - 1;
+        }
+        else
+        {
+          inf = meio + 1;
+        }
+      }
     }
+    return inf;
   }
 }
