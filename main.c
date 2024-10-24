@@ -95,15 +95,32 @@ int main()
     }
     if (!(strcmp(comando, "change")))
     {
+      if (lista != NULL)
+      {
+        celula *aux = (celula *)malloc(sizeof(celula));
+        int pos;
 
-      scanf(" %s", comando2);
-      if (!(strcmp(comando2, "-p"))) // quando for igual a -p
-      {
-        scanf("%d", &processo->prior);
-      }
-      else
-      {
-        scanf("%d %d %d", &processo->chegada.hh, &processo->chegada.mm, &processo->chegada.ss);
+        QuickSort(lista, lista->inicio, lista->fim - 1, 0, 0); // ordena a lista antes de realizar a busca
+
+        scanf(" %s", comando2);        // Comando seguinte -p ou -t
+        if (!(strcmp(comando2, "-p"))) // quando for igual a -p
+        {
+          scanf("%d", &processo->prior);
+          scanf("%d", &aux->prior);
+          pos = busca_binaria(lista, processo, 1);
+          lista->lista_de_processos[pos]->prior = aux->prior;
+          printf("\n------%d------\n", lista->lista_de_processos[pos]->prior);
+        }
+        else
+        {
+          scanf("%d %d %d", &processo->chegada.hh, &processo->chegada.mm, &processo->chegada.ss);
+          scanf("%d %d %d", &aux->chegada.hh, &aux->chegada.mm, &aux->chegada.ss);
+
+          pos = busca_binaria(lista, processo, 0);
+        }
+
+        free(aux);
+        aux = NULL;
       }
     }
     if (!(strcmp(comando, "print")))
