@@ -233,7 +233,7 @@ void lista_destruir(LISTA *lista)
 {
   if (lista != NULL)
   {
-    for (int i = 0; i < lista->tam; i++)
+    for (int i = 0; i < lista->fim; i++)
     {
       free(lista->lista_de_processos[i]);
       lista->lista_de_processos[i] = NULL;
