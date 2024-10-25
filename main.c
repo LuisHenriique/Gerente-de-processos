@@ -33,75 +33,87 @@ typedef struct lista
 LISTA *lista_criar();
 void lista_inserir_processo(celula *, LISTA *);
 void lista_imprimir(LISTA *);
-void lista_destruir(LISTA *);
 void lista_executar_processo(LISTA *);
+void lista_destruir(LISTA *);
 
 void QuickSort(LISTA *, int, int, int, int);
 int particiona_prior(LISTA *, int, int, int);
 int particiona_horario(LISTA *lista, int inicio, int fim, int cres_decres);
 int horario_para_segundo(horario);
-
 int busca_binaria(LISTA *, celula *, int);
 
-// Main
 int main()
 {
   LISTA *lista = lista_criar();
 
-  char comando[7];
-  char comando2[3];
+  char comando[7];  // Armazena o comando principal
+  char comando2[3]; // Armazena o argumento do comando (ex: -p, -t)
 
   scanf(" %s", comando);
 
-  while (strcmp(comando, "quit"))
+  /* Processamento contínuo até o comando "quit" */
+  while (strcmp(comando, "quit") != 0)
   {
 
-    celula *processo = (celula *)malloc(sizeof(celula));
+    celula *processo = (celula *)malloc(sizeof(celula)); // Aloca espaço para novo processo
+    if (processo == NULL)
+    {
+      fprintf(stderr, "Erro de alocação de memória\n");
+      exit(1);
+    }
 
-    if (!(strcmp(comando, "add")))
+    /* Adicionar novo processo à lista */
+    if (strcmp(comando, "add") == 0)
     {
       scanf(" %d %d %d %d %s ", &processo->prior, &processo->chegada.hh, &processo->chegada.mm, &processo->chegada.ss, processo->descricao);
       lista_inserir_processo(processo, lista);
     }
-    if (!(strcmp(comando, "exec"))) // executa tarefa, ou seja elimina ela da lista de processos
+    if (strcmp(comando, "exec") == 0) // executa tarefa, ou seja elimina ela da lista de processos
     {
       scanf(" %s", comando2);
 
-      if (!(strcmp(comando2, "-p"))) // quando for igual a -p ---> executa o de maior prioridade
+      if (strcmp(comando2, "-p") == 0) // quando for igual a -p ---> executa o de maior prioridade
       {
-        QuickSort(lista, lista->inicio, lista->fim - 1, 0, 0);
+        QuickSort(lista, lista->inicio, lista->fim - 1, 0, 0); // Ordena a lista em ordem crescente de prioridades
         lista_executar_processo(lista);
       }
       else // -t ---> executa o  de menor tempo
       {
-        QuickSort(lista, lista->inicio, lista->fim - 1, 1, 1);
+        QuickSort(lista, lista->inicio, lista->fim - 1, 1, 1); // Ordena a lista em ordem decrescente de horários
         lista_executar_processo(lista);
       }
     }
-    if (!(strcmp(comando, "next")))
+    if (strcmp(comando, "next") == 0)
     {
       scanf(" %s", comando2);
       if (!(strcmp(comando2, "-p"))) // quando for igual a -p ---> exibe o processo de maior prioridade
       {
         QuickSort(lista, lista->inicio, lista->fim - 1, 0, 0);
-        printf("%d %02d:%02d:%02d %s ", lista->lista_de_processos[lista->fim - 1]->prior, lista->lista_de_processos[lista->fim - 1]->chegada.hh, lista->lista_de_processos[lista->fim - 1]->chegada.mm, lista->lista_de_processos[lista->fim - 1]->chegada.ss, lista->lista_de_processos[lista->fim - 1]->descricao);
+        printf("%02d %02d:%02d:%02d %s ", lista->lista_de_processos[lista->fim - 1]->prior, lista->lista_de_processos[lista->fim - 1]->chegada.hh, lista->lista_de_processos[lista->fim - 1]->chegada.mm, lista->lista_de_processos[lista->fim - 1]->chegada.ss, lista->lista_de_processos[lista->fim - 1]->descricao);
       }
       else // quando for igual a -t ---> exibe o processo de menor horario
       {
         QuickSort(lista, lista->inicio, lista->fim - 1, 1, 1);
-        printf("%d %02d:%02d:%02d %s ", lista->lista_de_processos[lista->fim - 1]->prior, lista->lista_de_processos[lista->fim - 1]->chegada.hh, lista->lista_de_processos[lista->fim - 1]->chegada.mm, lista->lista_de_processos[lista->fim - 1]->chegada.ss, lista->lista_de_processos[lista->fim - 1]->descricao);
+        printf("%02d %02d:%02d:%02d %s ", lista->lista_de_processos[lista->fim - 1]->prior, lista->lista_de_processos[lista->fim - 1]->chegada.hh, lista->lista_de_processos[lista->fim - 1]->chegada.mm, lista->lista_de_processos[lista->fim - 1]->chegada.ss, lista->lista_de_processos[lista->fim - 1]->descricao);
       }
       printf("\n");
+      printf("\n");
     }
-    if (!(strcmp(comando, "change")))
+    if (strcmp(comando, "change") == 0)
     {
       if (lista != NULL)
       {
         celula *aux = (celula *)malloc(sizeof(celula));
+
+        if (aux == NULL)
+        {
+          fprintf(stderr, "Erro de alocação de memória\n");
+          exit(1);
+        }
         int pos;
 
-        scanf(" %s", comando2);        // Comando seguinte -p ou -t
-        if (!(strcmp(comando2, "-p"))) // quando for igual a -p
+        scanf(" %s", comando2);          // Comando seguinte -p ou -t
+        if (strcmp(comando2, "-p") == 0) // quando for igual a -p
         {
           scanf("%d", &processo->prior);
           scanf("%d", &aux->prior);
@@ -125,7 +137,7 @@ int main()
         aux = NULL;
       }
     }
-    if (!(strcmp(comando, "print")))
+    if (strcmp(comando, "print") == 0)
     {
       scanf(" %s", comando2);
       if (!(strcmp(comando2, "-p"))) // quando for igual a -p --> imprimi os processos em ordem decrescente de prioridade
@@ -176,13 +188,13 @@ void lista_inserir_processo(celula *processo, LISTA *lista)
 
 void lista_imprimir(LISTA *lista)
 {
-  if (lista != NULL && !lista->tam == 0)
+  if (lista != NULL)
   {
     int i;
 
     for (i = 0; i < lista->fim; i++)
     {
-      printf("%d %02d:%02d:%02d %s ", lista->lista_de_processos[i]->prior, lista->lista_de_processos[i]->chegada.hh, lista->lista_de_processos[i]->chegada.mm, lista->lista_de_processos[i]->chegada.ss, lista->lista_de_processos[i]->descricao);
+      printf("%02d %02d:%02d:%02d %s ", lista->lista_de_processos[i]->prior, lista->lista_de_processos[i]->chegada.hh, lista->lista_de_processos[i]->chegada.mm, lista->lista_de_processos[i]->chegada.ss, lista->lista_de_processos[i]->descricao);
       printf("\n");
     }
   }
@@ -192,7 +204,7 @@ void lista_executar_processo(LISTA *lista) // remove sempre o último elemento d
 {
   if (lista != NULL && lista->tam != 0)
   {
-    // executa processo de maior prioridade (remove o último elemento)
+    // executa processo de maior prioridade ou de menor horário (remove o último elemento do array)
 
     if (lista->tam == TAM_MAX)
     {

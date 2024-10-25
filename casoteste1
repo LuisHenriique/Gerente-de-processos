@@ -19,6 +19,6 @@ exec -p
 change -t 06 21 59 02 22 19
 change -p 6 10
 exec -t
-print -p
+print -p    
 print -t
 quit
