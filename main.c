@@ -36,139 +36,121 @@ void lista_imprimir(LISTA *);
 void lista_executar_processo(LISTA *);
 void lista_destruir(LISTA *);
 
-void QuickSort(LISTA *, int, int, int, int);
-int particiona_prior(LISTA *, int, int, int);
-int particiona_horario(LISTA *lista, int inicio, int fim, int cres_decres);
+void merge(LISTA *, int, int, int, int, int);
+void MergeSort(LISTA *, int, int, int, int);
 int horario_para_segundo(horario);
 int busca_binaria(LISTA *, celula *, int);
 
 int main()
 {
   LISTA *lista = lista_criar();
+  if (lista == NULL)
+  {
+    fprintf(stderr, "Erro ao criar lista.\n");
+    return 1;
+  }
 
   char comando[7];  // Armazena o comando principal
   char comando2[3]; // Armazena o argumento do comando (ex: -p, -t)
 
-  scanf(" %s", comando);
-
-  /* Processamento contínuo até o comando "quit" */
-  while (strcmp(comando, "quit") != 0)
+  while (1)
   {
-
-    celula *processo = (celula *)malloc(sizeof(celula)); // Aloca espaço para novo processo
-    if (processo == NULL)
-    {
-      fprintf(stderr, "Erro de alocação de memória\n");
-      exit(1);
-    }
+    scanf(" %6s", comando); // Limita a leitura para evitar overflow
+    if (strcmp(comando, "quit") == 0)
+      break; // Verifica se o comando é "quit"
 
     /* Adicionar novo processo à lista */
     if (strcmp(comando, "add") == 0)
     {
-      scanf(" %d %d %d %d %s ", &processo->prior, &processo->chegada.hh, &processo->chegada.mm, &processo->chegada.ss, processo->descricao);
+      celula *processo = (celula *)malloc(sizeof(celula)); // Aloca espaço para novo processo
+      if (processo == NULL)
+      {
+        fprintf(stderr, "Erro de alocação de memória\n");
+        exit(1);
+      }
+      scanf(" %d %d %d %d %49s", &processo->prior, &processo->chegada.hh, &processo->chegada.mm, &processo->chegada.ss, processo->descricao);
       lista_inserir_processo(processo, lista);
     }
-    if (strcmp(comando, "exec") == 0) // executa tarefa, ou seja elimina ela da lista de processos
-    {
-      scanf(" %s", comando2);
 
-      if (strcmp(comando2, "-p") == 0) // quando for igual a -p ---> executa o de maior prioridade
-      {
-        QuickSort(lista, lista->inicio, lista->fim - 1, 0, 0); // Ordena a lista em ordem crescente de prioridades
-        lista_executar_processo(lista);                        // Elimina o último elemento da lista
-      }
-      else // -t ---> executa o de menor horário
-      {
-        QuickSort(lista, lista->inicio, lista->fim - 1, 1, 1); // Ordena a lista em ordem decrescente de horários
-        lista_executar_processo(lista);                        // Elimina o último elemento da lista
-      }
-    }
-    if (strcmp(comando, "next") == 0) // Exibe o processo
-    {
+    if (strcmp(comando, "exec") == 0)
+    { // Executa tarefa, ou seja, elimina ela da lista de processos
       scanf(" %s", comando2);
-      if (strcmp(comando2, "-p") == 0) // quando for igual a -p ---> exibe o processo de maior prioridade
+      if (strcmp(comando2, "-p") == 0)                         // Executa o de maior prioridade
+        MergeSort(lista, lista->inicio, lista->fim - 1, 0, 0); // Ordena por prioridade
+      else                                                     // -t ---> executa o de menor horário
+        MergeSort(lista, lista->inicio, lista->fim - 1, 1, 1); // Ordena por horário
+
+      lista_executar_processo(lista); // Elimina o último elemento da lista
+    }
+
+    if (strcmp(comando, "next") == 0)
+    { // Exibe o processo
+      if (lista->tam > 0)
       {
-        QuickSort(lista, lista->inicio, lista->fim - 1, 0, 0); // Ordena a lista em ordem crescente de prioridades
-        printf("%02d %02d:%02d:%02d %s ", lista->lista_de_processos[lista->fim - 1]->prior, lista->lista_de_processos[lista->fim - 1]->chegada.hh, lista->lista_de_processos[lista->fim - 1]->chegada.mm, lista->lista_de_processos[lista->fim - 1]->chegada.ss, lista->lista_de_processos[lista->fim - 1]->descricao);
-      }
-      else // quando for igual a -t ---> exibe o processo de menor horario
-      {
-        QuickSort(lista, lista->inicio, lista->fim - 1, 1, 1); // Ordena a lista em ordem decrescente de horários
-        printf("%02d %02d:%02d:%02d %s ", lista->lista_de_processos[lista->fim - 1]->prior, lista->lista_de_processos[lista->fim - 1]->chegada.hh, lista->lista_de_processos[lista->fim - 1]->chegada.mm, lista->lista_de_processos[lista->fim - 1]->chegada.ss, lista->lista_de_processos[lista->fim - 1]->descricao);
+        scanf(" %s", comando2);
+        if (strcmp(comando2, "-p") == 0)                         // Exibe o processo de maior prioridade
+          MergeSort(lista, lista->inicio, lista->fim - 1, 0, 0); // Ordena por prioridade
+        else                                                     // Exibe o processo de menor horário
+          MergeSort(lista, lista->inicio, lista->fim - 1, 1, 1); // Ordena por horário
+
+        printf("%02d %02d:%02d:%02d %s\n", lista->lista_de_processos[lista->fim - 1]->prior, lista->lista_de_processos[lista->fim - 1]->chegada.hh, lista->lista_de_processos[lista->fim - 1]->chegada.mm, lista->lista_de_processos[lista->fim - 1]->chegada.ss, lista->lista_de_processos[lista->fim - 1]->descricao);
       }
       printf("\n");
-      printf("\n");
     }
-    if (strcmp(comando, "change") == 0) // Muda os dados do processo
-    {
-      if (lista != NULL)
+
+    if (strcmp(comando, "change") == 0)
+    { // Muda os dados do processo
+      if (lista->tam > 0)
       {
-        celula *aux = (celula *)malloc(sizeof(celula)); // Aloca um processo auxiliar
+        scanf(" %s", comando2); // Comando seguinte -p ou -t
+        int pos, novo_valor;
+        celula proc;
 
-        if (aux == NULL)
-        {
-          fprintf(stderr, "Erro de alocação de memória\n");
-          exit(1);
-        }
-
-        int pos;
-
-        scanf(" %s", comando2);          // Comando seguinte -p ou -t
-        if (strcmp(comando2, "-p") == 0) // quando for igual a -p faz a mudança na prioridade
-        {
-          scanf("%d", &processo->prior);
-          scanf("%d", &aux->prior);
-
-          QuickSort(lista, lista->inicio, lista->fim - 1, 0, 0); // ordena a lista em ordem de prioridade(crescente) antes de realizar a busca binária
-
-          pos = busca_binaria(lista, processo, 1); // Guarda o índice do elemento encontrado na busca binária
-
-          lista->lista_de_processos[pos]->prior = aux->prior; // substitui a nova prioridade na antiga prioridade
+        if (strcmp(comando2, "-p") == 0)
+        { // Muda a prioridade
+          scanf("%d", &proc.prior);
+          scanf("%d", &novo_valor);
+          MergeSort(lista, lista->inicio, lista->fim - 1, 0, 0); // Ordena por prioridade
+          pos = busca_binaria(lista, &proc, 1);                  // Busca pelo índice
+          if (pos != -1)
+          {
+            lista->lista_de_processos[pos]->prior = novo_valor; // Atualiza a prioridade
+          }
         }
         else
-        {
-          scanf("%d %d %d", &processo->chegada.hh, &processo->chegada.mm, &processo->chegada.ss);
-          scanf("%d %d %d", &aux->chegada.hh, &aux->chegada.mm, &aux->chegada.ss);
+        { // Muda o horário
+          horario novo_horario;
+          scanf("%d %d %d", &proc.chegada.hh, &proc.chegada.mm, &proc.chegada.ss);
+          scanf("%d %d %d", &novo_horario.hh, &novo_horario.mm, &novo_horario.ss);
 
-          QuickSort(lista, lista->inicio, lista->fim - 1, 0, 1); // ordena a lista em ordem de horario (crescente) antes de realizar a busca binária
-
-          pos = busca_binaria(lista, processo, 0); // Guarda o índice do elemento encontrado na busca binária
-
-          // Substitui o novo horário no antigo horário
-          lista->lista_de_processos[pos]->chegada.hh = aux->chegada.hh;
-          lista->lista_de_processos[pos]->chegada.mm = aux->chegada.mm;
-          lista->lista_de_processos[pos]->chegada.ss = aux->chegada.ss;
+          MergeSort(lista, lista->inicio, lista->fim - 1, 1, 0); // Ordena por horário
+          pos = busca_binaria(lista, &proc, 0);                  // Busca pelo índice
+          if (pos != -1)
+          {
+            lista->lista_de_processos[pos]->chegada = novo_horario; // Atualiza o horário
+          }
         }
-
-        // Libera a memória do processo auxiliar
-        free(aux);
-        aux = NULL;
       }
     }
+
     if (strcmp(comando, "print") == 0)
     {
       scanf(" %s", comando2);
-      if (strcmp(comando2, "-p") == 0) // quando for igual a -p --> imprimi os processos em ordem decrescente de prioridade
-      {
-        QuickSort(lista, lista->inicio, lista->fim - 1, 1, 0); // Ordena a lista em ordem decrescente de prioridades
-        lista_imprimir(lista);
-      }
-      else
-      {
-        QuickSort(lista, lista->inicio, lista->fim - 1, 0, 1); // Ordena a lista em ordem crescente de horários
-        lista_imprimir(lista);
-      }
+      if (strcmp(comando2, "-p") == 0)                         // Imprime processos em ordem de prioridade
+        MergeSort(lista, lista->inicio, lista->fim - 1, 0, 1); // Ordena por prioridade
+      else                                                     // Imprime processos em ordem de horário
+        MergeSort(lista, lista->inicio, lista->fim - 1, 1, 0); // Ordena por horário
+
+      lista_imprimir(lista);
       printf("\n");
     }
-
-    scanf(" %s", comando);
-  };
+  }
 
   // Libera todos os processos alocados e libera a lista
   lista_destruir(lista);
-
   return 0;
 }
+
 /*Funções da estrutura de dados*/
 LISTA *lista_criar()
 {
@@ -214,17 +196,8 @@ void lista_executar_processo(LISTA *lista) // remove sempre o último elemento d
   if (lista != NULL && lista->tam != 0)
   {
     // executa processo de maior prioridade ou de menor horário (remove o último elemento do array)
-
-    if (lista->tam == TAM_MAX)
-    {
-      free(lista->lista_de_processos[lista->fim]);
-      lista->lista_de_processos[lista->fim] = NULL;
-    }
-    else
-    {
-      free(lista->lista_de_processos[lista->fim - 1]);
-      lista->lista_de_processos[lista->fim - 1] = NULL;
-    }
+    free(lista->lista_de_processos[lista->fim - 1]);
+    lista->lista_de_processos[lista->fim - 1] = NULL;
     lista->tam--;
     lista->fim--;
   }
@@ -235,65 +208,88 @@ void lista_destruir(LISTA *lista)
   {
     for (int i = 0; i < lista->fim; i++)
     {
-      free(lista->lista_de_processos[i]);
-      lista->lista_de_processos[i] = NULL;
+      if (lista->lista_de_processos[i] != NULL) // Verifica se o ponteiro não é NULL antes de liberar
+      {
+        free(lista->lista_de_processos[i]);
+        lista->lista_de_processos[i] = NULL;
+      }
     }
 
     free(lista);
   }
 }
-/*Funções de ordenação -> prioridade  */
+/*Funções de ordenação   */
 
-int particiona_prior(LISTA *lista, int inicio, int fim, int cres_decres)
+void merge(LISTA *lista, int inicio, int meio, int fim, int tipo, int cres_decres)
 {
+  int tam_esq = meio - inicio + 1;
+  int tam_dir = fim - meio;
 
-  int meio = (inicio + fim) / 2;
+  celula *esquerda[tam_esq];
+  celula *direita[tam_dir];
 
-  int pivo = ((lista->lista_de_processos[inicio]->prior) + (lista->lista_de_processos[fim]->prior) + (lista->lista_de_processos[meio]->prior)) / 3; // Elemento pivô(prioridades)
-
-  while (inicio < fim)
+  for (int i = 0; i < tam_esq; i++)
   {
-    if (cres_decres == 0) // ordena em ordem crescente si --> cres_decres = 0
-    {
-      while (inicio < fim && lista->lista_de_processos[inicio]->prior <= pivo)
-        inicio++;
-
-      while (inicio < fim && lista->lista_de_processos[fim]->prior > pivo)
-        fim--;
-    }
-    else // ordena em ordem decrescente si --> cres_decres = 1
-    {
-      while (inicio < fim && lista->lista_de_processos[inicio]->prior > pivo)
-        inicio++;
-
-      while (inicio < fim && lista->lista_de_processos[fim]->prior <= pivo)
-        fim--;
-    }
-    celula *aux = lista->lista_de_processos[inicio];
-    lista->lista_de_processos[inicio] = lista->lista_de_processos[fim];
-    lista->lista_de_processos[fim] = aux;
+    esquerda[i] = lista->lista_de_processos[inicio + i];
+  }
+  for (int j = 0; j < tam_dir; j++)
+  {
+    direita[j] = lista->lista_de_processos[meio + 1 + j];
   }
 
-  return inicio;
+  int i = 0, j = 0, k = inicio;
+
+  while (i < tam_esq && j < tam_dir)
+  {
+    int comparar;
+    if (tipo == 0)
+    { // Ordenar por prioridade
+      comparar = (cres_decres == 0) ? (esquerda[i]->prior <= direita[j]->prior) : (esquerda[i]->prior > direita[j]->prior);
+    }
+    else
+    { // Ordenar por horário
+      int hora_esquerda = horario_para_segundo(esquerda[i]->chegada);
+      int hora_direita = horario_para_segundo(direita[j]->chegada);
+      comparar = (cres_decres == 0) ? (hora_esquerda <= hora_direita) : (hora_esquerda > hora_direita);
+    }
+
+    if (comparar)
+    {
+      lista->lista_de_processos[k] = esquerda[i];
+      i++;
+    }
+    else
+    {
+      lista->lista_de_processos[k] = direita[j];
+      j++;
+    }
+    k++;
+  }
+
+  while (i < tam_esq)
+  {
+    lista->lista_de_processos[k] = esquerda[i];
+    i++;
+    k++;
+  }
+
+  while (j < tam_dir)
+  {
+    lista->lista_de_processos[k] = direita[j];
+    j++;
+    k++;
+  }
 }
-
-void QuickSort(LISTA *lista, int inicio, int fim, int cres_decres, int tipo)
+void MergeSort(LISTA *lista, int inicio, int fim, int tipo, int cres_decres)
 {
-
   if (inicio < fim)
   {
-    int pos;
-    if (tipo == 0) // particiona_prioridade
-    {
-      pos = particiona_prior(lista, inicio, fim, cres_decres);
-    }
-    else // particiona_horario
-    {
+    int meio = inicio + (fim - inicio) / 2;
 
-      pos = particiona_horario(lista, inicio, fim, cres_decres);
-    }
-    QuickSort(lista, inicio, pos - 1, cres_decres, tipo);
-    QuickSort(lista, pos, fim, cres_decres, tipo);
+    MergeSort(lista, inicio, meio, tipo, cres_decres);
+    MergeSort(lista, meio + 1, fim, tipo, cres_decres);
+
+    merge(lista, inicio, meio, fim, tipo, cres_decres);
   }
 }
 
@@ -302,38 +298,6 @@ void QuickSort(LISTA *lista, int inicio, int fim, int cres_decres, int tipo)
 int horario_para_segundo(horario h)
 {
   return (h.hh * 3600 + h.mm * 60 + h.ss);
-}
-
-int particiona_horario(LISTA *lista, int inicio, int fim, int cres_decres)
-{
-  int meio = (inicio + fim) / 2;
-  int pivo = ((horario_para_segundo(lista->lista_de_processos[inicio]->chegada)) + (horario_para_segundo(lista->lista_de_processos[meio]->chegada)) + (horario_para_segundo(lista->lista_de_processos[fim]->chegada))) / 3;
-
-  while (inicio < fim)
-  {
-    if (cres_decres == 0) // Ordena em ordem crescente
-    {
-      while (inicio < fim && horario_para_segundo(lista->lista_de_processos[inicio]->chegada) <= pivo)
-        inicio++;
-
-      while (inicio < fim && horario_para_segundo(lista->lista_de_processos[fim]->chegada) > pivo)
-        fim--;
-    }
-    else // Ordena em ordem decrescente
-    {
-      while (inicio < fim && horario_para_segundo(lista->lista_de_processos[inicio]->chegada) > pivo)
-        inicio++;
-
-      while (inicio < fim && horario_para_segundo(lista->lista_de_processos[fim]->chegada) <= pivo)
-        fim--;
-    }
-
-    celula *aux = lista->lista_de_processos[inicio];
-    lista->lista_de_processos[inicio] = lista->lista_de_processos[fim];
-    lista->lista_de_processos[fim] = aux;
-  }
-
-  return inicio;
 }
 
 /*Metodo de busca*/
